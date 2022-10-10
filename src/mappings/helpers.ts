@@ -14,8 +14,7 @@ import {
   LiquidityMiningPositionSnapshot,
   SingleSidedStakingCampaign,
   SingleSidedStakingCampaignPosition,
-  SwaprStakingRewardsFactory,
-  PairTokenPrice
+  SwaprStakingRewardsFactory
 } from '../types/schema'
 import { Factory as FactoryContract } from '../types/templates/Pair/Factory'
 import { getFactoryAddress, getStakingRewardsFactoryAddress } from '../commons/addresses'
@@ -430,27 +429,4 @@ export function addMonthlyUniqueAddressInteraction(event: ethereum.Event, addres
 
     monthlyUniqueAddressInteractionsData.save()
   }
-}
-
-export abstract class PairTokenPriceTimeframe {
-  static ONE_MINUTE: string = 'ONE_MINUTE'
-  static FIVE_MINUTES: string = 'FIVE_MINUTES'
-  static FIFTEEN_MINUTES: string = 'FIFTEEN_MINUTES'
-  static ONE_HOUR: string = 'ONE_HOUR'
-  static TWELVE_HOURS: string = 'TWELVE_HOURS'
-}
-
-export function createPairTokenPrice(id: string, block: ethereum.Block, pair: Pair, timeframe: string): void {
-  let pairTokenPrice = new PairTokenPrice(id + '-' + timeframe)
-
-  pairTokenPrice.blockNumber = block.number
-  pairTokenPrice.blockTimestamp = block.timestamp
-  pairTokenPrice.pair = pair.id
-  pairTokenPrice.token0Price = pair.token0Price || ZERO_BD
-  pairTokenPrice.token1Price = pair.token1Price || ZERO_BD
-  pairTokenPrice.token0Address = Address.fromString(pair.token0 || ADDRESS_ZERO)
-  pairTokenPrice.token1Address = Address.fromString(pair.token1 || ADDRESS_ZERO)
-  pairTokenPrice.timeframe = timeframe
-
-  pairTokenPrice.save()
 }
