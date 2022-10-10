@@ -60,6 +60,9 @@ type Pair @entity {
   # pair address
   id: ID!
 
+  # swap fee
+  swapFee: BigInt!
+
   # mirrored from the smart contract
   token0: Token!
   token1: Token!
@@ -489,23 +492,4 @@ type SingleSidedStakingCampaignPosition @entity {
   user: User!
   stakedAmount: BigDecimal!
   singleSidedStakingCampaign: SingleSidedStakingCampaign!
-}
-
-enum PairTokenPriceTimeframe {
-  FIVE_MINUTES
-  FIFTEEN_MINUTES
-  ONE_HOUR
-  TWELVE_HOURS
-}
-
-type PairTokenPrice @entity {
-  id: ID!
-  timeframe: PairTokenPriceTimeframe!
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  pair: Pair!
-  token0Price: BigDecimal!
-  token0Address: Bytes!
-  token1Price: BigDecimal!
-  token1Address: Bytes!
 }

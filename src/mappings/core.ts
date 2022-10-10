@@ -1,20 +1,12 @@
 import { BigInt, BigDecimal, store, Address, log, Bytes, ethereum, dataSource } from '@graphprotocol/graph-ts'
-import {
-  Pair,
-  Token,
-  Transaction,
-  Mint as MintEvent,
-  Burn as BurnEvent,
-  Swap as SwapEvent,
-  PairTokenPrice
-} from '../types/schema'
-import { Mint, Burn, Swap, Transfer, Sync } from '../types/templates/Pair/Pair'
+import { Pair, Token, Transaction, Mint as MintEvent, Burn as BurnEvent, Swap as SwapEvent } from '../types/schema'
+import { Mint, Burn, Swap, Transfer, Sync, SetSwapFeeCall } from '../types/templates/Pair/Pair'
 import { updatePairDayData, updateTokenDayData, updateSwaprDayData, updatePairHourData } from './dayUpdates'
 import {
   getNativeCurrencyPriceInUSD,
   findNativeCurrencyPerToken,
   getTrackedVolumeUSD,
-  getTrackedLiquidityUSD
+  getTrackedLiquidityUSD,
 } from './pricing'
 import {
   convertTokenToDecimal,
@@ -27,9 +19,7 @@ import {
   createLiquiditySnapshot,
   addDailyUniqueAddressInteraction,
   addWeeklyUniqueAddressInteraction,
-  addMonthlyUniqueAddressInteraction,
-  createPairTokenPrice,
-  PairTokenPriceTimeframe
+  addMonthlyUniqueAddressInteraction
 } from './helpers'
 import { getBundle, getSwaprFactory } from './factory'
 
@@ -86,10 +76,7 @@ export function handleTransfer(event: Transfer): void {
     // create new mint if no mints so far or if last one is done already
     if (mints.length === 0 || isCompleteMint(mints[mints.length - 1])) {
       let mint = new MintEvent(
-        event.transaction.hash
-          .toHexString()
-          .concat('-')
-          .concat(BigInt.fromI32(mints.length).toString())
+        event.transaction.hash.toHexString().concat('-').concat(BigInt.fromI32(mints.length).toString())
       )
       mint.transaction = transaction.id
       mint.pair = pair.id
@@ -112,10 +99,7 @@ export function handleTransfer(event: Transfer): void {
   if (event.params.to.toHexString() == pair.id) {
     let burns = transaction.burns
     let burn = new BurnEvent(
-      event.transaction.hash
-        .toHexString()
-        .concat('-')
-        .concat(BigInt.fromI32(burns.length).toString())
+      event.transaction.hash.toHexString().concat('-').concat(BigInt.fromI32(burns.length).toString())
     )
     burn.transaction = transaction.id
     burn.pair = pair.id
@@ -148,10 +132,7 @@ export function handleTransfer(event: Transfer): void {
         burn = currentBurn as BurnEvent
       } else {
         burn = new BurnEvent(
-          event.transaction.hash
-            .toHexString()
-            .concat('-')
-            .concat(BigInt.fromI32(burns.length).toString())
+          event.transaction.hash.toHexString().concat('-').concat(BigInt.fromI32(burns.length).toString())
         )
         burn.transaction = transaction.id
         burn.needsComplete = false
@@ -162,10 +143,7 @@ export function handleTransfer(event: Transfer): void {
       }
     } else {
       burn = new BurnEvent(
-        event.transaction.hash
-          .toHexString()
-          .concat('-')
-          .concat(BigInt.fromI32(burns.length).toString())
+        event.transaction.hash.toHexString().concat('-').concat(BigInt.fromI32(burns.length).toString())
       )
       burn.transaction = transaction.id
       burn.needsComplete = false
@@ -530,10 +508,7 @@ export function handleSwap(event: Swap): void {
   }
   let swaps = transaction.swaps
   let swap = new SwapEvent(
-    event.transaction.hash
-      .toHexString()
-      .concat('-')
-      .concat(BigInt.fromI32(swaps.length).toString())
+    event.transaction.hash.toHexString().concat('-').concat(BigInt.fromI32(swaps.length).toString())
   )
 
   // update swap event
@@ -619,32 +594,17 @@ export function handleSwap(event: Swap): void {
   addMonthlyUniqueAddressInteraction(event, swap.to)
 }
 
-export function handlePairTokenPrice(block: ethereum.Block): void {
-  let pairContractAddress = dataSource.address()
-  let pair = Pair.load(pairContractAddress.toHexString())
+/**
+ * Handles updating swapFee on a pair.
+ */
+export function handleSetSwapFee(call: SetSwapFeeCall): void {
+  let pair = Pair.load(dataSource.address().toHexString())
 
   if (!pair) {
+    log.debug('Pair not found: ${}', [dataSource.address().toHexString()])
     return
   }
 
-  const fiveMinutes = BigInt.fromI32(5 * 60)
-  const fifteenMinutes = BigInt.fromI32(15 * 60)
-  const oneHour = BigInt.fromI32(60 * 60)
-  const twelveHours = BigInt.fromI32(12 * 60 * 60)
-
-  if (block.timestamp.mod(fiveMinutes).isZero()) {
-    createPairTokenPrice(block, pair, PairTokenPriceTimeframe.FIVE_MINUTES)
-  }
-
-  if (block.timestamp.mod(fifteenMinutes).isZero()) {
-    createPairTokenPrice(block, pair, PairTokenPriceTimeframe.FIFTEEN_MINUTES)
-  }
-
-  if (block.timestamp.mod(oneHour).isZero()) {
-    createPairTokenPrice(block, pair, PairTokenPriceTimeframe.ONE_HOUR)
-  }
-
-  if (block.timestamp.mod(twelveHours).isZero()) {
-    createPairTokenPrice(block, pair, PairTokenPriceTimeframe.TWELVE_HOURS)
-  }
+  pair.swapFee = call.inputs._swapFee
+  pair.save()
 }
