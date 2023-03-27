@@ -1,4 +1,4 @@
-type SwaprFactory @entity {
+type HoneyswapFactory @entity {
   # factory address
   id: ID!
 
@@ -268,8 +268,8 @@ type MonthlyUniqueAddressInteraction @entity {
   addresses: [Bytes!]!
 }
 
-# Data accumulated and condensed into day stats for all of Swapr
-type SwaprDayData @entity {
+# Data accumulated and condensed into day stats for all of Honeyswap
+type HoneyswapDayData @entity {
   id: ID! # timestamp rounded to current day by dividing by 86400
   date: Int!
 
@@ -354,7 +354,7 @@ type TokenDayData @entity {
 }
 
 # Staking rewards distribution factory
-type SwaprStakingRewardsFactory @entity {
+type HoneyswapStakingRewardsFactory @entity {
   # factory address
   id: ID!
   initializedCampaignsCount: Int!

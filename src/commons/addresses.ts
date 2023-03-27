@@ -143,9 +143,9 @@ export function getUsdtNativeCurrencyWrapperPair(): string {
 }
 
 /**
- * Swapr token address, supported network: Mainnet, Arbitrum One, xDAI, Rinkeby, and Arbitrum Rinkeby
+ * Honeyswap token address, supported network: Mainnet, Arbitrum One, xDAI, Rinkeby, and Arbitrum Rinkeby
  */
-export function getSwaprTokenAddress(): string {
+export function getHoneyswapTokenAddress(): string {
   let network = dataSource.network() as string
   // Production
   if (network == 'mainnet') return '0x6cacdb97e3fc8136805a9e7c342d866ab77d0957'
@@ -156,25 +156,25 @@ export function getSwaprTokenAddress(): string {
    */
   if (network == 'arbitrum-rinkeby') return '0x99583f330814E04de96C0288FBF82B5E35A009dc'
   if (network == 'rinkeby') return '0xa271ccbc126a41f04bae8fdbdbcefcf10bf59a48'
-  log.warning('no Swapr address for unsupported network {}', [network])
+  log.warning('no Honeyswap address for unsupported network {}', [network])
   return ADDRESS_ZERO
 }
 
 /**
- * Checks if the token address is a Swapr token
+ * Checks if the token address is a Honeyswap token
  * @param address
  */
-export function isSwaprToken(address: Address): boolean {
+export function isHoneyswapToken(address: Address): boolean {
   // let network = dataSource.network() as string;
   // for now, treat everything as true value
-  return address.toHexString() == getSwaprTokenAddress()
+  return address.toHexString() == getHoneyswapTokenAddress()
 }
 
 /**
- * Checks if the token address is a Swapr LP token
+ * Checks if the token address is a Honeyswap LP token
  * @param address
  */
-export function isSwaprLPToken(address: Address): boolean {
+export function isHoneyswapLPToken(address: Address): boolean {
   // let network = dataSource.network() as string;
   // for now, treat everything as true value
   let pair = Pair.load(address.toHexString())

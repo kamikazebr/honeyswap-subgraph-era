@@ -1,6 +1,6 @@
 /* eslint-disable prefer-const */
 import { BigInt, log } from '@graphprotocol/graph-ts'
-import { SwaprFactory, Pair, Token, Bundle } from '../types/schema'
+import { HoneyswapFactory, Pair, Token, Bundle } from '../types/schema'
 import { PairCreated } from '../types/Factory/Factory'
 import { Pair as PairTemplate } from '../types/templates'
 import { Pair as PairContract } from '../types/templates/Pair/Pair'
@@ -10,20 +10,20 @@ import {
   fetchTokenSymbol,
   fetchTokenName,
   fetchTokenDecimals,
-  fetchTokenTotalSupply,
+  fetchTokenTotalSupply
 } from './helpers'
 import { getFactoryAddress, getLiquidityTrackingTokenAddresses } from '../commons/addresses'
 
 /**
- * Returns the SwaprFactory entity. Creates a new entity if it doesn't exist.
- * @returns {SwaprFactory} the SwaprFactory entity
+ * Returns the HoneyswapFactory entity. Creates a new entity if it doesn't exist.
+ * @returns {HoneyswapFactory} the HoneyswapFactory entity
  */
-export function getSwaprFactory(): SwaprFactory {
+export function getHoneyswapFactory(): HoneyswapFactory {
   // load factory (create if first exchange)
   let factoryAddress = getFactoryAddress()
-  let factory = SwaprFactory.load(factoryAddress)
+  let factory = HoneyswapFactory.load(factoryAddress)
   if (factory === null) {
-    factory = new SwaprFactory(factoryAddress)
+    factory = new HoneyswapFactory(factoryAddress)
     factory.pairCount = 0
     factory.totalVolumeNativeCurrency = ZERO_BD
     factory.totalLiquidityNativeCurrency = ZERO_BD
@@ -64,7 +64,7 @@ export function getBundle(): Bundle {
 }
 
 export function handleNewPair(event: PairCreated): void {
-  let factory = getSwaprFactory()
+  let factory = getHoneyswapFactory()
   factory.pairCount = factory.pairCount + 1
   factory.save()
 

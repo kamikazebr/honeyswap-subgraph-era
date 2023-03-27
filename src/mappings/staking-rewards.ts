@@ -13,7 +13,7 @@ import {
   SingleSidedStakingCampaignReward,
   SingleSidedStakingCampaignDeposit,
   SingleSidedStakingCampaignWithdrawal,
-  SingleSidedStakingCampaignClaim,
+  SingleSidedStakingCampaignClaim
 } from '../types/schema'
 import { Distribution as DistributionTemplate } from '../types/templates'
 import { DistributionCreated } from '../types/StakingRewardsFactory/StakingRewardsFactory'
@@ -24,7 +24,7 @@ import {
   OwnershipTransferred,
   Recovered,
   Staked,
-  Withdrawn,
+  Withdrawn
 } from '../types/templates/Distribution/StakingRewardsDistribution'
 import {
   convertTokenToDecimal,
@@ -32,10 +32,10 @@ import {
   BI_18,
   getOrCreateLiquidityMiningPosition,
   createLiquidityMiningSnapshot,
-  getSwaprStakingRewardsFactory,
-  getOrCreateSingleSidedStakingCampaignPosition,
+  getHoneyswapStakingRewardsFactory,
+  getOrCreateSingleSidedStakingCampaignPosition
 } from './helpers'
-import { isSwaprLPToken } from '../commons/addresses'
+import { isHoneyswapLPToken } from '../commons/addresses'
 import { createOrGetToken } from '../commons/token'
 import { getFirstFromAddressArray } from '../commons/helpers'
 
@@ -47,7 +47,7 @@ export function handleDistributionCreation(event: DistributionCreated): void {
 }
 
 export function handleDistributionInitialization(event: Initialized): void {
-  let factory = getSwaprStakingRewardsFactory()
+  let factory = getHoneyswapStakingRewardsFactory()
   if (factory === null) {
     // bail if factory is null
     log.error('factory must be initialized when canceling a distribution', [])
@@ -60,8 +60,8 @@ export function handleDistributionInitialization(event: Initialized): void {
   let context = dataSource.context()
   let hexDistributionAddress = context.getString('address')
 
-  // Assume that every ERC20 which is NOT a Swapr LP pair token is considered a single sided staking campaign
-  if (!isSwaprLPToken(event.params.stakableTokenAddress)) {
+  // Assume that every ERC20 which is NOT a Honeyswap LP pair token is considered a single sided staking campaign
+  if (!isHoneyswapLPToken(event.params.stakableTokenAddress)) {
     let sssCampaign = new SingleSidedStakingCampaign(event.address.toHexString())
     sssCampaign.initialized = true
     sssCampaign.owner = Bytes.fromHexString(context.getString('owner')) as Bytes
@@ -147,7 +147,7 @@ export function handleDistributionInitialization(event: Initialized): void {
 
 export function handleDistributionCancelation(event: Canceled): void {
   let campaignId = event.address.toHexString()
-  let factory = getSwaprStakingRewardsFactory()
+  let factory = getHoneyswapStakingRewardsFactory()
   if (factory === null) {
     // bail if factory is null
     log.error('factory must be initialized when canceling a distribution', [])

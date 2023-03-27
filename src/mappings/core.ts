@@ -1,12 +1,12 @@
 import { BigInt, BigDecimal, store, Address, log, Bytes, ethereum, dataSource } from '@graphprotocol/graph-ts'
 import { Pair, Token, Transaction, Mint as MintEvent, Burn as BurnEvent, Swap as SwapEvent } from '../types/schema'
 import { Mint, Burn, Swap, Transfer, Sync, SetSwapFeeCall } from '../types/templates/Pair/Pair'
-import { updatePairDayData, updateTokenDayData, updateSwaprDayData, updatePairHourData } from './dayUpdates'
+import { updatePairDayData, updateTokenDayData, updateHoneyswapDayData, updatePairHourData } from './dayUpdates'
 import {
   getNativeCurrencyPriceInUSD,
   findNativeCurrencyPerToken,
   getTrackedVolumeUSD,
-  getTrackedLiquidityUSD,
+  getTrackedLiquidityUSD
 } from './pricing'
 import {
   convertTokenToDecimal,
@@ -21,7 +21,7 @@ import {
   addWeeklyUniqueAddressInteraction,
   addMonthlyUniqueAddressInteraction
 } from './helpers'
-import { getBundle, getSwaprFactory } from './factory'
+import { getBundle, getHoneyswapFactory } from './factory'
 
 function isCompleteMint(mintId: string): boolean {
   let mintEvent = MintEvent.load(mintId)
@@ -35,7 +35,7 @@ export function handleTransfer(event: Transfer): void {
     return
   }
 
-  let factory = getSwaprFactory()
+  let factory = getHoneyswapFactory()
   let transactionHash = event.transaction.hash.toHexString()
 
   // user stats
@@ -76,7 +76,10 @@ export function handleTransfer(event: Transfer): void {
     // create new mint if no mints so far or if last one is done already
     if (mints.length === 0 || isCompleteMint(mints[mints.length - 1])) {
       let mint = new MintEvent(
-        event.transaction.hash.toHexString().concat('-').concat(BigInt.fromI32(mints.length).toString())
+        event.transaction.hash
+          .toHexString()
+          .concat('-')
+          .concat(BigInt.fromI32(mints.length).toString())
       )
       mint.transaction = transaction.id
       mint.pair = pair.id
@@ -99,7 +102,10 @@ export function handleTransfer(event: Transfer): void {
   if (event.params.to.toHexString() == pair.id) {
     let burns = transaction.burns
     let burn = new BurnEvent(
-      event.transaction.hash.toHexString().concat('-').concat(BigInt.fromI32(burns.length).toString())
+      event.transaction.hash
+        .toHexString()
+        .concat('-')
+        .concat(BigInt.fromI32(burns.length).toString())
     )
     burn.transaction = transaction.id
     burn.pair = pair.id
@@ -132,7 +138,10 @@ export function handleTransfer(event: Transfer): void {
         burn = currentBurn as BurnEvent
       } else {
         burn = new BurnEvent(
-          event.transaction.hash.toHexString().concat('-').concat(BigInt.fromI32(burns.length).toString())
+          event.transaction.hash
+            .toHexString()
+            .concat('-')
+            .concat(BigInt.fromI32(burns.length).toString())
         )
         burn.transaction = transaction.id
         burn.needsComplete = false
@@ -143,7 +152,10 @@ export function handleTransfer(event: Transfer): void {
       }
     } else {
       burn = new BurnEvent(
-        event.transaction.hash.toHexString().concat('-').concat(BigInt.fromI32(burns.length).toString())
+        event.transaction.hash
+          .toHexString()
+          .concat('-')
+          .concat(BigInt.fromI32(burns.length).toString())
       )
       burn.transaction = transaction.id
       burn.needsComplete = false
@@ -206,10 +218,10 @@ export function handleSync(event: Sync): void {
   let pair = Pair.load(event.address.toHex()) as Pair
   let token0 = Token.load(pair.token0) as Token
   let token1 = Token.load(pair.token1) as Token
-  let swapr = getSwaprFactory()
+  let honeyswap = getHoneyswapFactory()
 
   // reset factory liquidity by subtracting onluy tarcked liquidity
-  swapr.totalLiquidityNativeCurrency = swapr.totalLiquidityNativeCurrency.minus(
+  honeyswap.totalLiquidityNativeCurrency = honeyswap.totalLiquidityNativeCurrency.minus(
     pair.trackedReserveNativeCurrency as BigDecimal
   )
 
@@ -258,8 +270,8 @@ export function handleSync(event: Sync): void {
   pair.reserveUSD = pair.reserveNativeCurrency.times(bundle.nativeCurrencyPrice)
 
   // use tracked amounts globally
-  swapr.totalLiquidityNativeCurrency = swapr.totalLiquidityNativeCurrency.plus(trackedLiquidityNativeCurrency)
-  swapr.totalLiquidityUSD = swapr.totalLiquidityNativeCurrency.times(bundle.nativeCurrencyPrice)
+  honeyswap.totalLiquidityNativeCurrency = honeyswap.totalLiquidityNativeCurrency.plus(trackedLiquidityNativeCurrency)
+  honeyswap.totalLiquidityUSD = honeyswap.totalLiquidityNativeCurrency.times(bundle.nativeCurrencyPrice)
 
   // now correctly set liquidity amounts for each token
   token0.totalLiquidity = token0.totalLiquidity.plus(pair.reserve0)
@@ -267,7 +279,7 @@ export function handleSync(event: Sync): void {
 
   // save entities
   pair.save()
-  swapr.save()
+  honeyswap.save()
   token0.save()
   token1.save()
 }
@@ -294,7 +306,7 @@ export function handleMint(event: Mint): void {
   }
 
   let pair = Pair.load(event.address.toHex()) as Pair
-  let swaprFactory = getSwaprFactory()
+  let honeyswapFactory = getHoneyswapFactory()
   let token0 = Token.load(pair.token0) as Token
   let token1 = Token.load(pair.token1) as Token
 
@@ -315,13 +327,13 @@ export function handleMint(event: Mint): void {
 
   // update txn counts
   pair.txCount = pair.txCount.plus(ONE_BI)
-  swaprFactory.txCount = swaprFactory.txCount.plus(ONE_BI)
+  honeyswapFactory.txCount = honeyswapFactory.txCount.plus(ONE_BI)
 
   // save entities
   token0.save()
   token1.save()
   pair.save()
-  swaprFactory.save()
+  honeyswapFactory.save()
 
   mint.sender = event.params.sender
   mint.amount0 = token0Amount as BigDecimal
@@ -338,9 +350,9 @@ export function handleMint(event: Mint): void {
   updatePairDayData(event)
   updatePairHourData(event)
 
-  let swaprDayData = updateSwaprDayData(event)
-  swaprDayData.dailyMints = swaprDayData.dailyMints.plus(ONE_BI)
-  swaprDayData.save()
+  let honeyswapDayData = updateHoneyswapDayData(event)
+  honeyswapDayData.dailyMints = honeyswapDayData.dailyMints.plus(ONE_BI)
+  honeyswapDayData.save()
 
   updateTokenDayData(token0 as Token, event)
   updateTokenDayData(token1 as Token, event)
@@ -371,7 +383,7 @@ export function handleBurn(event: Burn): void {
   //update token info
   let token0 = Token.load(pair.token0) as Token
   let token1 = Token.load(pair.token1) as Token
-  let swaprFactory = getSwaprFactory()
+  let honeyswapFactory = getHoneyswapFactory()
   let token0Amount = convertTokenToDecimal(event.params.amount0, token0.decimals)
   let token1Amount = convertTokenToDecimal(event.params.amount1, token1.decimals)
 
@@ -387,14 +399,14 @@ export function handleBurn(event: Burn): void {
     .times(bundle.nativeCurrencyPrice)
 
   // update txn counts
-  swaprFactory.txCount = swaprFactory.txCount.plus(ONE_BI)
+  honeyswapFactory.txCount = honeyswapFactory.txCount.plus(ONE_BI)
   pair.txCount = pair.txCount.plus(ONE_BI)
 
   // update global counter and save
   token0.save()
   token1.save()
   pair.save()
-  swaprFactory.save()
+  honeyswapFactory.save()
 
   // update burn
   // burn.sender = event.params.sender
@@ -413,9 +425,9 @@ export function handleBurn(event: Burn): void {
   updatePairDayData(event)
   updatePairHourData(event)
 
-  let swaprDayData = updateSwaprDayData(event)
-  swaprDayData.dailyBurns = swaprDayData.dailyBurns.plus(ONE_BI)
-  swaprDayData.save()
+  let honeyswapDayData = updateHoneyswapDayData(event)
+  honeyswapDayData.dailyBurns = honeyswapDayData.dailyBurns.plus(ONE_BI)
+  honeyswapDayData.save()
 
   updateTokenDayData(token0 as Token, event)
   updateTokenDayData(token1 as Token, event)
@@ -485,17 +497,19 @@ export function handleSwap(event: Swap): void {
   pair.save()
 
   // update global values, only used tracked amounts for volume
-  let swaprFactory = getSwaprFactory()
-  swaprFactory.totalVolumeUSD = swaprFactory.totalVolumeUSD.plus(trackedAmountUSD)
-  swaprFactory.totalVolumeNativeCurrency = swaprFactory.totalVolumeNativeCurrency.plus(trackedAmountNativeCurrency)
-  swaprFactory.untrackedVolumeUSD = swaprFactory.untrackedVolumeUSD.plus(derivedAmountUSD)
-  swaprFactory.txCount = swaprFactory.txCount.plus(ONE_BI)
+  let honeyswapFactory = getHoneyswapFactory()
+  honeyswapFactory.totalVolumeUSD = honeyswapFactory.totalVolumeUSD.plus(trackedAmountUSD)
+  honeyswapFactory.totalVolumeNativeCurrency = honeyswapFactory.totalVolumeNativeCurrency.plus(
+    trackedAmountNativeCurrency
+  )
+  honeyswapFactory.untrackedVolumeUSD = honeyswapFactory.untrackedVolumeUSD.plus(derivedAmountUSD)
+  honeyswapFactory.txCount = honeyswapFactory.txCount.plus(ONE_BI)
 
   // save entities
   pair.save()
   token0.save()
   token1.save()
-  swaprFactory.save()
+  honeyswapFactory.save()
 
   let transaction = Transaction.load(event.transaction.hash.toHexString())
   if (transaction === null) {
@@ -508,7 +522,10 @@ export function handleSwap(event: Swap): void {
   }
   let swaps = transaction.swaps
   let swap = new SwapEvent(
-    event.transaction.hash.toHexString().concat('-').concat(BigInt.fromI32(swaps.length).toString())
+    event.transaction.hash
+      .toHexString()
+      .concat('-')
+      .concat(BigInt.fromI32(swaps.length).toString())
   )
 
   // update swap event
@@ -539,18 +556,20 @@ export function handleSwap(event: Swap): void {
   // update day entities
   let pairDayData = updatePairDayData(event)
   let pairHourData = updatePairHourData(event)
-  let swaprDayData = updateSwaprDayData(event)
+  let honeyswapDayData = updateHoneyswapDayData(event)
   let token0DayData = updateTokenDayData(token0 as Token, event)
   let token1DayData = updateTokenDayData(token1 as Token, event)
 
   // swap specific updating
-  swaprDayData.dailyVolumeUSD = swaprDayData.dailyVolumeUSD.plus(trackedAmountUSD)
-  swaprDayData.dailyVolumeNativeCurrency = swaprDayData.dailyVolumeNativeCurrency.plus(trackedAmountNativeCurrency)
-  swaprDayData.dailyVolumeUntracked = swaprDayData.dailyVolumeUntracked.plus(derivedAmountUSD)
+  honeyswapDayData.dailyVolumeUSD = honeyswapDayData.dailyVolumeUSD.plus(trackedAmountUSD)
+  honeyswapDayData.dailyVolumeNativeCurrency = honeyswapDayData.dailyVolumeNativeCurrency.plus(
+    trackedAmountNativeCurrency
+  )
+  honeyswapDayData.dailyVolumeUntracked = honeyswapDayData.dailyVolumeUntracked.plus(derivedAmountUSD)
 
   // collect to daily swaps
-  swaprDayData.dailySwaps = swaprDayData.dailySwaps.plus(ONE_BI)
-  swaprDayData.save()
+  honeyswapDayData.dailySwaps = honeyswapDayData.dailySwaps.plus(ONE_BI)
+  honeyswapDayData.save()
 
   // swap specific updating for pair
   pairDayData.dailyVolumeToken0 = pairDayData.dailyVolumeToken0.plus(amount0Total)

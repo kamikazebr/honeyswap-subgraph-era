@@ -14,7 +14,7 @@ import {
   LiquidityMiningPositionSnapshot,
   SingleSidedStakingCampaign,
   SingleSidedStakingCampaignPosition,
-  SwaprStakingRewardsFactory
+  HoneyswapStakingRewardsFactory
 } from '../types/schema'
 import { Factory as FactoryContract } from '../types/templates/Pair/Factory'
 import { getFactoryAddress, getStakingRewardsFactoryAddress } from '../commons/addresses'
@@ -320,19 +320,19 @@ export function createLiquidityMiningSnapshot(
 }
 
 /**
- * Retrieves the SwaprStakingRewardsFactory, creates a one if none exists
+ * Retrieves the HoneyswapStakingRewardsFactory, creates a one if none exists
  */
-export function getSwaprStakingRewardsFactory(): SwaprStakingRewardsFactory {
+export function getHoneyswapStakingRewardsFactory(): HoneyswapStakingRewardsFactory {
   // load factory (create if first distribution)
   let stakingRewardsFactoryAddress = getStakingRewardsFactoryAddress()
-  let factory = SwaprStakingRewardsFactory.load(stakingRewardsFactoryAddress)
+  let factory = HoneyswapStakingRewardsFactory.load(stakingRewardsFactoryAddress)
   if (factory === null) {
-    factory = new SwaprStakingRewardsFactory(stakingRewardsFactoryAddress)
+    factory = new HoneyswapStakingRewardsFactory(stakingRewardsFactoryAddress)
     factory.initializedCampaignsCount = 0
     factory.save()
   }
 
-  return factory as SwaprStakingRewardsFactory
+  return factory as HoneyswapStakingRewardsFactory
 }
 
 /**
