@@ -25,6 +25,6 @@ jobs:
     - name: Install dependencies
       run: yarn install --frozen-lockfile --cache-folder $(yarn cache dir)
     - name: Codegen
-      run: yarn codegen:mainnet
+      run: yarn codegen:era-testnet
     - name: Build
-      run: yarn build:mainnet
+      run: yarn build:era-testnet
