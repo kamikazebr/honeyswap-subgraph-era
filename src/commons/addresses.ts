@@ -13,6 +13,7 @@ export function getFactoryAddress(): string {
   if (network == 'arbitrum-one') return '0x359f20ad0f42d75a5077e65f30274cabe6f4f01a'
   if (network == 'arbitrum-rinkeby') return '0x5c702fbbcfb8ef5cc70c4e4341aa437ef9d55281'
   if (network == 'goerli') return '0xa3Dd335F8107527796642D044a5bD0A94De4E0E4'
+  if (network == 'zkSync2-testnet') return '0xa76e90683102d4c6396a47cc18fa3bfe03a02869'
   log.warning('no factory address for unsupported network {}', [network])
   return ADDRESS_ZERO
 }
@@ -37,6 +38,7 @@ export function getNativeCurrencyWrapperAddress(): string {
   if (network == 'xdai') return '0xe91d153e0b41518a2ce8dd3d7944fa863463a97d'
   if (network == 'arbitrum-one') return '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'
   if (network == 'arbitrum-rinkeby') return '0xb47e6a5f8b33b3f17603c83a0535a9dcd7e32681'
+  if (network == 'zkSync2-testnet') return '0x20b28B1e4665FFf290650586ad76E977EAb90c5D' // WETH
   log.warning('no native currency wrapper address for unsupported network {}', [network])
   return ADDRESS_ZERO
 }
@@ -102,6 +104,12 @@ export function getLiquidityTrackingTokenAddresses(): string[] {
       '0x552444108a2af6375205f320f196b5d1fedfaa51' // DAI
     ]
   }
+
+  if (network == 'zkSync2-testnet') {
+    return [
+      '0x20b28B1e4665FFf290650586ad76E977EAb90c5D' // WETH
+    ]
+  }
   log.warning('no liquidity tracking token address for unsupported network {}', [network])
   return []
 }
@@ -114,6 +122,7 @@ export function getUsdcNativeCurrencyWrapperPairAddress(): string {
   if (network == 'xdai') return ADDRESS_ZERO
   if (network == 'arbitrum-one') return '0x403b1405d8caffc1cc5032cc82aa135d2481d0cf'
   if (network == 'arbitrum-rinkeby') return ADDRESS_ZERO
+  // TODO: add usdc wrapper pair address for zkSync2-testnet
   log.warning('no usdc native currency wrapper pair address for unsupported network {}', [network])
   return ADDRESS_ZERO
 }
@@ -126,6 +135,7 @@ export function getDaiNativeCurrencyWrapperPairAddress(): string {
   if (network == 'xdai') return ADDRESS_ZERO
   if (network == 'arbitrum-one') return ADDRESS_ZERO
   if (network == 'arbitrum-rinkeby') return '0x1bb34bc1967e0cbe1c9008e5390c6d426357549d'
+  // TODO: add dai wrapper pair address for zkSync2-testnet
   log.warning('no dai native currency wrapper pair address for unsupported network {}', [network])
   return ADDRESS_ZERO
 }
@@ -138,6 +148,7 @@ export function getUsdtNativeCurrencyWrapperPair(): string {
   if (network == 'xdai') return ADDRESS_ZERO
   if (network == 'arbitrum-one') return ADDRESS_ZERO
   if (network == 'arbitrum-rinkeby') return ADDRESS_ZERO
+  // TODO: add usdt wrapper pair address for zkSync2-testnet
   log.warning('no usdt native currency wrapper pair address for unsupported network {}', [network])
   return ADDRESS_ZERO
 }
@@ -156,6 +167,7 @@ export function getHoneyswapTokenAddress(): string {
    */
   if (network == 'arbitrum-rinkeby') return '0x99583f330814E04de96C0288FBF82B5E35A009dc'
   if (network == 'rinkeby') return '0xa271ccbc126a41f04bae8fdbdbcefcf10bf59a48'
+  // TODO add honeyswap token address for zkSync2-testnet
   log.warning('no Honeyswap address for unsupported network {}', [network])
   return ADDRESS_ZERO
 }

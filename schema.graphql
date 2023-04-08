@@ -1,3 +1,14 @@
+type Deployer @entity {
+  # deployer address
+  id: ID!
+  # events
+  factoryDeployedAddress: [String!]!
+  feeSetterDeployed: [String!]!
+  feeReceiverDeployed: [String!]!
+  transferFailureCount: Int!
+  transferSuccessCount: Int!
+}
+
 type HoneyswapFactory @entity {
   # factory address
   id: ID!

@@ -1,6 +1,6 @@
 specVersion: 0.0.4
 description: Honeyswap is a decentralized protocol for automated token exchange on Ethereum.
-repository: https://github.com/1hive/honeyswap-subgraph
+repository: https://github.com/1hive/honeyswap-subgraph-era
 schema:
   file: ./schema.graphql
 dataSources:
@@ -33,7 +33,35 @@ dataSources:
       eventHandlers:
         - event: PairCreated(indexed address,indexed address,address,uint256)
           handler: handleNewPair
-
+  - kind: ethereum/contract
+    name: Deployer
+    network: zkSync2-testnet
+    source:
+      address: '0xaBB6bF5C0fCDe67d5248f6f3b99eE519E4D5aA7F'
+      abi: Deployer
+      startBlock: 3711172
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/mappings/deployer.ts
+      entities:
+        - Pair
+        - Token
+      abis:
+        - name: Deployer
+          file: ./abis/deployer.json
+      eventHandlers:
+        - event: PairFactoryDeployed(address)
+          handler: handlePairFactoryDeployed
+        - event: FeeSetterDeployed(address)
+          handler: handleFeeSetterDeployed
+        - event: FeeReceiverDeployed(address)
+          handler: handleFeeReceiverDeployed
+        - event: TransferFailure()
+          handler: handleTransferFailure
+        - event: TransferSuccess()
+          handler: handleTransferSuccess
 templates:
   - kind: ethereum/contract
     name: Pair
@@ -64,6 +92,8 @@ templates:
           handler: handleSwap
         - event: Sync(uint112,uint112)
           handler: handleSync
-      callHandlers:
-        - function: setSwapFee(uint32)
-          handler: handleSetSwapFee
+        - event: SwapFeeChanged(uint32,uint32)
+          handler: handleSwapFeeChanged
+      # callHandlers:
+      #   - function: setSwapFee(uint32)
+      #     handler: handleSetSwapFee
