@@ -30,7 +30,7 @@ export function handlePairFactoryDeployed(event: PairFactoryDeployed): void {
 
   getHoneyswapFactory(factoryAddress) // create factory if not exist
 
-  deployer.factoryDeployedAddress.concat([factoryAddress])
+  deployer.factoryDeployedAddress = deployer.factoryDeployedAddress.concat([factoryAddress])
 
   deployer.save()
 }
@@ -39,7 +39,7 @@ export function handleFeeSetterDeployed(event: FeeSetterDeployed): void {
   log.warning('handleFeeSetterDeployed called: {} address: {}', [event.params.feeSetter.toHex(), event.address.toHex()])
   const deployer = getDeployer(event.address.toHex())
 
-  deployer.feeSetterDeployed.concat([event.params.feeSetter.toHex()])
+  deployer.feeSetterDeployed = deployer.feeSetterDeployed.concat([event.params.feeSetter.toHex()])
 
   deployer.save()
 }
@@ -52,7 +52,7 @@ export function handleFeeReceiverDeployed(event: FeeReceiverDeployed): void {
 
   const deployer = getDeployer(event.address.toHex())
 
-  deployer.feeReceiverDeployed.concat([event.params.feeReceiver.toHex()])
+  deployer.feeReceiverDeployed = deployer.feeReceiverDeployed.concat([event.params.feeReceiver.toHex()])
 
   deployer.save()
 }
@@ -64,7 +64,8 @@ export function handleTransferFailure(event: TransferFailure): void {
     BigInt.fromI32(deployer.transferFailureCount + 1).toString(),
     event.address.toHex()
   ])
-  deployer.transferFailureCount += 1
+
+  deployer.transferFailureCount = deployer.transferFailureCount += 1
 
   deployer.save()
 }
@@ -77,7 +78,7 @@ export function handleTransferSuccess(event: TransferSuccess): void {
     event.address.toHex()
   ])
 
-  deployer.transferSuccessCount += 1
+  deployer.transferSuccessCount = deployer.transferSuccessCount += 1
 
   deployer.save()
 }

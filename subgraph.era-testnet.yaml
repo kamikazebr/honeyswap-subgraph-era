@@ -8,9 +8,9 @@ dataSources:
     name: Factory
     network: zkSync2-testnet
     source:
-      address: '0xa76e90683102d4c6396a47cc18fa3bfe03a02869'
+      address: '0x806bFEdbC10E489ecd3515f2019a956A64064946'
       abi: Factory
-      startBlock: 3711204
+      startBlock: 6609381
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -37,9 +37,9 @@ dataSources:
     name: Deployer
     network: zkSync2-testnet
     source:
-      address: '0xaBB6bF5C0fCDe67d5248f6f3b99eE519E4D5aA7F'
+      address: '0xd0EFA86667139f145A5976B6fDBEEA49C017A86d'
       abi: Deployer
-      startBlock: 3711172
+      startBlock: 6603575
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7

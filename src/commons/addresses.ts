@@ -167,6 +167,7 @@ export function getHoneyswapTokenAddress(): string {
    */
   if (network == 'arbitrum-rinkeby') return '0x99583f330814E04de96C0288FBF82B5E35A009dc'
   if (network == 'rinkeby') return '0xa271ccbc126a41f04bae8fdbdbcefcf10bf59a48'
+  if (network == 'zkSync2-testnet') return '0x1f239b710bc93274aba0d21abfb7f6c6afb9e77a'
   // TODO add honeyswap token address for zkSync2-testnet
   log.warning('no Honeyswap address for unsupported network {}', [network])
   return ADDRESS_ZERO
