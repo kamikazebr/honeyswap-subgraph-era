@@ -29,7 +29,8 @@
     "deploy-local:arbitrum-one-v2": "graph deploy honeyswap subgraph.arbitrum-one.yaml --debug --ipfs http://localhost:5001 --node http://127.0.0.1:8020",
     "deploy:rinkeby": "graph deploy honeyswap-rinkeby-new subgraph.rinkeby.yaml --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/ --debug",
     "deploy:goerli": "graph deploy honeyswap-goerli subgraph.goerli.yaml --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/ --debug",
-    "deploy:era-testnet": "graph deploy --studio honeyswap-era subgraph.era-testnet.yaml ",
+    "deploy:era-testnet": "graph deploy --product hosted-service kamikazebr/honeyswap-era-testnet subgraph.era-testnet.yaml",
+    "deploy:era-mainnet": "graph deploy --studio honeyswap-era subgraph.era-testnet.yaml ",
     "deploy:xdai": "graph deploy honeyswap-xdai-v2 subgraph.xdai.yaml --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/ --debug",
     "deploy:mainnet": "graph deploy honeyswap-mainnet-v2 subgraph.mainnet.yaml --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/ --debug",
     "deploy:arbitrum-one": "graph deploy honeyswap-arbitrum-one subgraph.arbitrum-one-old.yaml --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/ --debug",
@@ -38,8 +39,8 @@
     "deploy:arbitrum-rinkeby": "graph deploy honeyswap-arbitrum-rinkeby-v2 subgraph.arbitrum-rinkeby.yaml --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/ --debug"
   },
   "devDependencies": {
-    "@graphprotocol/graph-cli": "^0.43.0",
-    "@graphprotocol/graph-ts": "^0.29.3",
+    "@graphprotocol/graph-cli": "^0.50.1",
+    "@graphprotocol/graph-ts": "^0.30.0",
     "@typescript-eslint/eslint-plugin": "^2.0.0",
     "@typescript-eslint/parser": "^2.0.0",
     "eslint": "^6.2.2",

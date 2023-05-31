@@ -1,16 +1,16 @@
 specVersion: 0.0.4
 description: Honeyswap is a decentralized protocol for automated token exchange on Ethereum.
-repository: https://github.com/1hive/honeyswap-subgraph
+repository: https://github.com/1hive/honeyswap-subgraph-era
 schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
     name: Factory
-    network: zksync-era
+    network: zkSync2-testnet
     source:
-      address: '0xa3Dd335F8107527796642D044a5bD0A94De4E0E4'
+      address: '0x806bFEdbC10E489ecd3515f2019a956A64064946'
       abi: Factory
-      startBlock: 7429330
+      startBlock: 6609381
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -34,37 +34,38 @@ dataSources:
         - event: PairCreated(indexed address,indexed address,address,uint256)
           handler: handleNewPair
   - kind: ethereum/contract
-    name: StakingRewardsFactory
-    network: zksync-era
+    name: Deployer
+    network: zkSync2-testnet
     source:
-      address: '0x0000000000000000000000000000000000000000'
-      abi: StakingRewardsFactory
-      startBlock: 7429330
+      address: '0xd0EFA86667139f145A5976B6fDBEEA49C017A86d'
+      abi: Deployer
+      startBlock: 6603575
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
-      file: ./src/mappings/staking-rewards.ts
+      file: ./src/mappings/deployer.ts
       entities:
-        - Distribution
+        - Pair
+        - Token
       abis:
-        - name: Factory
-          file: ./abis/factory.json
-        - name: StakingRewardsFactory
-          file: ./abis/staking-rewards-factory.json
-        - name: ERC20
-          file: ./abis/ERC20.json
-        - name: ERC20SymbolBytes
-          file: ./abis/ERC20SymbolBytes.json
-        - name: ERC20NameBytes
-          file: ./abis/ERC20NameBytes.json
+        - name: Deployer
+          file: ./abis/deployer.json
       eventHandlers:
-        - event: DistributionCreated(address,address)
-          handler: handleDistributionCreation
+        - event: PairFactoryDeployed(address)
+          handler: handlePairFactoryDeployed
+        - event: FeeSetterDeployed(address)
+          handler: handleFeeSetterDeployed
+        - event: FeeReceiverDeployed(address)
+          handler: handleFeeReceiverDeployed
+        - event: TransferFailure()
+          handler: handleTransferFailure
+        - event: TransferSuccess()
+          handler: handleTransferSuccess
 templates:
   - kind: ethereum/contract
     name: Pair
-    network: zksync-era
+    network: zkSync2-testnet
     source:
       abi: Pair
     mapping:
@@ -91,47 +92,8 @@ templates:
           handler: handleSwap
         - event: Sync(uint112,uint112)
           handler: handleSync
-      callHandlers:
-        - function: setSwapFee(uint32)
-          handler: handleSetSwapFee
-  - kind: ethereum/contract
-    name: Distribution
-    network: zksync-era
-    source:
-      abi: StakingRewardsDistribution
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      file: ./src/mappings/staking-rewards.ts
-      entities:
-        - Deposit
-        - Withdrawal
-        - Claim
-        - Recovery
-      abis:
-        - name: Factory
-          file: ./abis/factory.json
-        - name: StakingRewardsDistribution
-          file: ./abis/staking-rewards-distribution.json
-        - name: ERC20
-          file: ./abis/ERC20.json
-        - name: ERC20SymbolBytes
-          file: ./abis/ERC20SymbolBytes.json
-        - name: ERC20NameBytes
-          file: ./abis/ERC20NameBytes.json
-      eventHandlers:
-        - event: Initialized(address[],address,uint256[],uint64,uint64,bool,uint256)
-          handler: handleDistributionInitialization
-        - event: Canceled()
-          handler: handleDistributionCancelation
-        - event: Staked(indexed address,uint256)
-          handler: handleDeposit
-        - event: Withdrawn(indexed address,uint256)
-          handler: handleWithdrawal
-        - event: Claimed(indexed address,uint256[])
-          handler: handleClaim
-        - event: Recovered(uint256[])
-          handler: handleRecovery
-        - event: OwnershipTransferred(indexed address,indexed address)
-          handler: handleOwnershipTransfer
+        - event: SwapFeeChanged(uint32,uint32)
+          handler: handleSwapFeeChanged
+      # callHandlers:
+      #   - function: setSwapFee(uint32)
+      #     handler: handleSetSwapFee

@@ -18,12 +18,13 @@ import { getFactoryAddress, getLiquidityTrackingTokenAddresses } from '../common
  * Returns the HoneyswapFactory entity. Creates a new entity if it doesn't exist.
  * @returns {HoneyswapFactory} the HoneyswapFactory entity
  */
-export function getHoneyswapFactory(): HoneyswapFactory {
+export function getHoneyswapFactory(factoryAddress: string | null = getFactoryAddress()): HoneyswapFactory {
   // load factory (create if first exchange)
-  let factoryAddress = getFactoryAddress()
-  let factory = HoneyswapFactory.load(factoryAddress)
+  if (!factoryAddress) factoryAddress = getFactoryAddress()
+
+  let factory = HoneyswapFactory.load(factoryAddress!)
   if (factory === null) {
-    factory = new HoneyswapFactory(factoryAddress)
+    factory = new HoneyswapFactory(factoryAddress!)
     factory.pairCount = 0
     factory.totalVolumeNativeCurrency = ZERO_BD
     factory.totalLiquidityNativeCurrency = ZERO_BD
@@ -36,9 +37,8 @@ export function getHoneyswapFactory(): HoneyswapFactory {
     let bundle = new Bundle('1')
     bundle.nativeCurrencyPrice = ZERO_BD
     bundle.save()
+    factory.save() // for performance its better that been inside the if
   }
-
-  factory.save()
 
   return factory
 }
@@ -64,6 +64,11 @@ export function getBundle(): Bundle {
 }
 
 export function handleNewPair(event: PairCreated): void {
+  log.warning('handleNewPair called: {} token0: {} token1: {} ', [
+    event.params.pair.toHex(),
+    event.params.token0.toHex(),
+    event.params.token1.toHex()
+  ])
   let factory = getHoneyswapFactory()
   factory.pairCount = factory.pairCount + 1
   factory.save()
@@ -81,7 +86,7 @@ export function handleNewPair(event: PairCreated): void {
     let decimals = fetchTokenDecimals(event.params.token0)
     // bail if we couldn't figure out the decimals
     if (decimals === null) {
-      log.debug('mybug the decimal on token 0 was null', [])
+      log.warning('mybug the decimal on token 0 was null', [])
       return
     }
 

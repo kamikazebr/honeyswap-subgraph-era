@@ -1,6 +1,6 @@
 import { BigInt, BigDecimal, store, Address, log, Bytes, ethereum, dataSource } from '@graphprotocol/graph-ts'
 import { Pair, Token, Transaction, Mint as MintEvent, Burn as BurnEvent, Swap as SwapEvent } from '../types/schema'
-import { Mint, Burn, Swap, Transfer, Sync, SetSwapFeeCall } from '../types/templates/Pair/Pair'
+import { Mint, Burn, Swap, Transfer, Sync, SetSwapFeeCall, SwapFeeChanged } from '../types/templates/Pair/Pair'
 import { updatePairDayData, updateTokenDayData, updateHoneyswapDayData, updatePairHourData } from './dayUpdates'
 import {
   getNativeCurrencyPriceInUSD,
@@ -301,7 +301,7 @@ export function handleMint(event: Mint): void {
   let mint = MintEvent.load(mintId)
 
   if (!mint) {
-    log.debug('handleMint: mint: {}', [mintId])
+    log.warning('handleMint: mint: {}', [mintId])
     return
   }
 
@@ -617,13 +617,35 @@ export function handleSwap(event: Swap): void {
  * Handles updating swapFee on a pair.
  */
 export function handleSetSwapFee(call: SetSwapFeeCall): void {
-  let pair = Pair.load(dataSource.address().toHexString())
+  const pairAddress = dataSource.address().toHexString()
+
+  log.warning('handleSetSwapFee: {} ', [pairAddress])
+
+  let pair = Pair.load(pairAddress)
 
   if (!pair) {
-    log.debug('Pair not found: ${}', [dataSource.address().toHexString()])
+    log.warning('Pair not found: ${}', [pairAddress])
     return
   }
 
   pair.swapFee = call.inputs._swapFee
+  pair.save()
+}
+/**
+ * Handles updating swapFee on a pair.
+ */
+export function handleSwapFeeChanged(event: SwapFeeChanged): void {
+  const pairAddress = event.address.toHexString()
+
+  log.warning('handleSwapFeeChanged: {} ', [pairAddress])
+
+  let pair = Pair.load(pairAddress)
+
+  if (!pair) {
+    log.warning('Pair not found: ${}', [pairAddress])
+    return
+  }
+
+  pair.swapFee = event.params.newSwapFee
   pair.save()
 }
